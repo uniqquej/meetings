@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     #my app
     "user",
     "post",
-    "chat"
+    "chat",
+    "group",
 ]
 
 MIDDLEWARE = [
