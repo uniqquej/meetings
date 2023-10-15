@@ -17,7 +17,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     content = models.TextField()
-    likes = models.ManyToManyField(User, related_name='liked_post')
+    likes = models.ManyToManyField(User, related_name='liked_post', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -40,7 +40,7 @@ class Recruitment(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     number_of_recruits = models.IntegerField()
-    applicant = models.ManyToManyField(User, related_name='application')
+    applicant = models.ManyToManyField(User, related_name='application', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
