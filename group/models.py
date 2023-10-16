@@ -5,7 +5,7 @@ from user.models import User
 class Group(models.Model):
     group_name = models.CharField(max_length=100)
     leader = models.ForeignKey(User, on_delete=models.CASCADE)
-    member = models.ManyToManyField(User, related_name="joined_group")
+    member = models.ManyToManyField(User, related_name="joined_group", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
