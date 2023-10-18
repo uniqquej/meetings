@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
 from post.models import Post, Comment, PostImage, Recruitment, Category
+from user.serializers import UserSerializer
 
 class PostSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
     class Meta:
         model = Post
         fields = "__all__"
-        read_only_fields = ["author",]
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:

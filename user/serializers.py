@@ -23,11 +23,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         if "password" in validated_data:
-            is_password = re.compile(
-                r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@!%*#?&])[A-Za-z\d@!%*#?&]{8,}$"
-            )
-            if not is_password.fullmatch(validated_data["password"]):
-                raise serializers.ValidationError("최소 8자리/영문,특수문자,숫자를  모두 포함해주세요")
 
             instance.set_password(validated_data.get("password", instance.password))
             instance.save()

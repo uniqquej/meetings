@@ -11,7 +11,7 @@ class PostView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        posts = Post.objects.all()
+        posts = Post.objects.select_related("author").all()
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
