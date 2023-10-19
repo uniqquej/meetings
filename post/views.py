@@ -1,14 +1,21 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
 
 from post.models import Post, Comment, PostImage, Recruitment, Category
-from post.serializers import PostSerializer, CommentSerializer, RecruitmentSerializer
+from post.serializers import (CategorySerializer,PostSerializer, CommentSerializer, 
+                              RecruitmentSerializer, RecruitmentDetailSerializer)
+
+class CategoryView(APIView):
+    def get(self, request):
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PostView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request):
         posts = Post.objects.select_related("author").all()
@@ -23,7 +30,7 @@ class PostView(APIView):
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 class PostDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request, post_id):
         post = get_object_or_404(Post, id=post_id)
@@ -49,10 +56,10 @@ class PostDetailView(APIView):
         return Response({"detail":"삭제 완료"}, status = status.HTTP_204_NO_CONTENT)
 
 class RecruitmentView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request):
-        recruitments = Recruitment.objects.all()
+        recruitments = Recruitment.objects.select_related("author").all()
         serializer = RecruitmentSerializer(recruitments, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
@@ -64,11 +71,11 @@ class RecruitmentView(APIView):
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 class RecruitmentDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request, recruitment_id):
-        recruitment = get_object_or_404(Recruitment, id=recruitment_id)
-        serializer = RecruitmentSerializer(recruitment)
+        recruitment = Recruitment.objects.select_related("author","group").get(id=recruitment_id)
+        serializer = RecruitmentDetailSerializer(recruitment)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
     def put(self, request, recruitment_id):

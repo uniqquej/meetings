@@ -22,6 +22,7 @@ class Post(models.Model):
     
     class Meta:
         db_table = 'post'
+        ordering = ['-created_at']
     
     def __str__(self) -> str:
         return f'{self.title}'
@@ -45,6 +46,7 @@ class Recruitment(models.Model):
     
     class Meta:
         db_table = 'recruitment'
+        ordering = ['-created_at']
     
     def __str__(self) -> str:
         return f'{self.title}'
@@ -53,9 +55,11 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         db_table = 'comment'
+        ordering = ['-created_at']
     
     def __str__(self) -> str:
         return f'{self.comment}'
