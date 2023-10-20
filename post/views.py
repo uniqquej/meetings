@@ -79,11 +79,11 @@ class RecruitmentDetailView(APIView):
         return Response(serializer.data, status = status.HTTP_200_OK)
     
     def put(self, request, recruitment_id):
-        recruitment = get_object_or_404(Post, id=recruitment_id)
+        recruitment = get_object_or_404(Recruitment, id=recruitment_id)
         if recruitment.author != request.user:
             return Response({"detail":"권한 없음"}, status=status.HTTP_403_FORBIDDEN)
         
-        serializer = PostSerializer(recruitment, data=request.data, partial=True)
+        serializer = RecruitmentDetailSerializer(recruitment, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status = status.HTTP_202_ACCEPTED)
