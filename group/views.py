@@ -1,17 +1,18 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from group.models import Group, Meeting
 from group.serializers import GroupSerializer, MeetingSerializer
 
 class GroupView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request):
-        groups = Group.objects.prefetch_related("meeting_set").all()
+        groups = Group.objects.filter(Q(leader=request.user) | Q(member=request.user))
         serializer = GroupSerializer(groups, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -23,10 +24,10 @@ class GroupView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GroupDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request, group_id):
-        group = get_object_or_404(Group, id=group_id)
+        group = Group.objects.prefetch_related("meeting_set").get(id=group_id)
         serializer = GroupSerializer(group)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -51,7 +52,7 @@ class GroupDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MeetingDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def put(self, request, meeting_id):
         meeting = get_object_or_404(Meeting, id=meeting_id)
