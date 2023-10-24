@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from post.models import Post, Comment, PostImage, Recruitment, Category
 from post.serializers import (CategorySerializer,PostSerializer, CommentSerializer, 
@@ -18,7 +19,14 @@ class PostView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request):
-        posts = Post.objects.select_related("author").all()
+        params = request.GET.get('search',None)
+        q = Q()
+        
+        if params:
+            q &= Q(title__icontains=params) | Q(content__icontains=params)
+            posts = Post.objects.filter(q).select_related("author")
+        else:
+            posts = Post.objects.select_related("author").all()
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
@@ -59,7 +67,14 @@ class RecruitmentView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request):
-        recruitments = Recruitment.objects.select_related("author").all()
+        params = request.GET.get('search',None)
+        q = Q()
+        
+        if params:
+            q &= Q(title__icontains=params) | Q(content__icontains=params)
+            recruitments =Recruitment.objects.filter(q).select_related("author")
+        else:
+            recruitments = Recruitment.objects.select_related("author").all()
         serializer = RecruitmentSerializer(recruitments, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
     

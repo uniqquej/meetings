@@ -63,6 +63,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
         token["phone_number"] = user.phone_number
+        token["user_id"] = user.id
         return token
 
 class LogoutSerializer(serializers.Serializer):
