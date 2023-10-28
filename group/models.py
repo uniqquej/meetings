@@ -17,7 +17,6 @@ class Group(models.Model):
 class Meeting(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
-    detail = models.TextField(null=True, blank=True)
     time_to_meet = models.DateTimeField()
     
     class Meta:

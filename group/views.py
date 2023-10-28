@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
-from group.models import Group, Meeting
-from group.serializers import GroupSerializer, MeetingSerializer
+from group.models import Group, Meeting, Notice
+from group.serializers import GroupSerializer, MeetingSerializer,NoticeSerializer
 
 class GroupView(APIView):
     permission_classes = [IsAuthenticated]
@@ -27,7 +27,7 @@ class GroupDetailView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request, group_id):
-        group = Group.objects.prefetch_related("meeting_set").get(id=group_id)
+        group = Group.objects.prefetch_related("meeting_set","notice_set").get(id=group_id)
         serializer = GroupSerializer(group)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -51,6 +51,21 @@ class GroupDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class GroupNoticeView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, group_id):
+        group = Group.objects.filter(id=group_id).select_related("notice_set")
+        serializer = NoticeSerializer(group.notice_set, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request, group_id):
+        serializer = NoticeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(group=group_id)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class MeetingDetailView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
