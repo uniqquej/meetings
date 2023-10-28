@@ -22,6 +22,20 @@ class Meeting(models.Model):
     
     class Meta:
         db_table = "meeting"
+        ordering = ['-time_to_meet']
+    
+    def __str__(self) -> str:
+        return f'{self.title}'
+
+class Notice(models.Model):
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    content = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = "notice"
+        ordering = ['-created_at']
     
     def __str__(self) -> str:
         return f'{self.title}'
