@@ -13,17 +13,17 @@ class UserSerializer(serializers.ModelSerializer):
         exclude = ["auth_number", "is_admin"]
 
     def validate(self, data):
-        is_password = re.compile(
-            r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@!%*#?&])[A-Za-z\d@!%*#?&]{8,}$"
-        )
-        if not is_password.fullmatch(data["password"]):
-            raise serializers.ValidationError("최소 8자리/영문,특수문자,숫자를  모두 포함해주세요")
+        if "password" in data:
+            is_password = re.compile(
+                r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@!%*#?&])[A-Za-z\d@!%*#?&]{8,}$"
+            )
+            if not is_password.fullmatch(data["password"]):
+                raise serializers.ValidationError("최소 8자리/영문,특수문자,숫자를  모두 포함해주세요")
 
         return data
 
     def update(self, instance, validated_data):
         if "password" in validated_data:
-
             instance.set_password(validated_data.get("password", instance.password))
             instance.save()
 
