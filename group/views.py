@@ -20,7 +20,7 @@ class GroupView(APIView):
     def post(self, request):
         serializer = GroupSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(leader=request.user)
+            serializer.save(leader=request.user, member=[request.user])
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -29,7 +29,7 @@ class GroupDetailView(APIView):
     
     def get(self, request, group_id):
         group = Group.objects.prefetch_related("meeting_set","notice_set").get(id=group_id)
-        if (request.user != group.member)|(request.user != group.leader):
+        if (request.user not in group.member.all()):
             return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
         
         serializer = GroupSerializer(group)
