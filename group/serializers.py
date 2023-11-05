@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from group.models import Group, Meeting, Notice
+from group.models import Group, Meeting, Notice, ToDoList
 
 class MeetingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,4 +23,13 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ['leader',]
 
-      
+class TodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ToDoList
+        fields = "__all__"
+        read_only = ['writer',]
+        
+class TodoDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=ToDoList
+        fields = ['task','date','is_done']
