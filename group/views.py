@@ -5,9 +5,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
-from group.models import Group, Meeting, ToDoList
+from group.models import Group, Meeting, ToDoList, ToDo
 from group.serializers import (GroupSerializer, MeetingSerializer,NoticeSerializer,
-                               TodoSerializer,TodoDetailSerializer)
+                               ToDoListSerializer, TaskSerializer)
 
 class GroupView(APIView):
     permission_classes = [IsAuthenticated]
@@ -29,6 +29,9 @@ class GroupDetailView(APIView):
     
     def get(self, request, group_id):
         group = Group.objects.prefetch_related("meeting_set","notice_set").get(id=group_id)
+        if (request.user != group.member)|(request.user != group.leader):
+            return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         serializer = GroupSerializer(group)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -44,7 +47,7 @@ class GroupDetailView(APIView):
         group = get_object_or_404(Group, id=group_id)
         
         if group.leader != request.user:
-            return Response({"detail":"권한 없음"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
         
         serializer = GroupSerializer(group, data=request.data, partial=True)
         if serializer.is_valid():
@@ -90,30 +93,39 @@ class MeetingDetailView(APIView):
         meeting.delete()
         return Response({"detail":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)
 
-class ToDoView(APIView):
+class ToDoListView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, group_id):
         to_do_list = ToDoList.objects.filter(group=group_id)
-        serializer = TodoSerializer(to_do_list)
+        serializer = ToDoListSerializer(to_do_list)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ToDoView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, group_id):
+        to_dos = ToDo.objects.filter(group=group_id, writer = request.user)
+        serializer = TaskSerializer(to_dos)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request, group_id):
-        serializer = TodoSerializer(data=request.data)
+        serializer = TaskSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(writer = request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+            serializer.save(group=group_id, writer=request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class ToDoDetailView(APIView):
     permission_classes = [IsAuthenticated]
     
     def put(self, request, to_do_id):
-        to_do = get_object_or_404(ToDoList,id=to_do_id)
+        to_do = get_object_or_404(ToDo,id=to_do_id)
         if to_do.writer != request.user:
             return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
         
-        serializer = TodoDetailSerializer(to_do, data=request.data, partial=True)
+        serializer = TaskSerializer(to_do, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
@@ -123,6 +135,5 @@ class ToDoDetailView(APIView):
         to_do = get_object_or_404(ToDoList,id=to_do_id)
         if to_do.writer != request.user:
             return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         to_do.delete()
         return Response({"detail":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)

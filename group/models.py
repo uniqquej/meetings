@@ -43,12 +43,24 @@ class Notice(models.Model):
 class ToDoList(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     writer = models.ForeignKey(User, on_delete=models.CASCADE)
-    task = models.CharField(max_length=255)
-    is_done = models.BooleanField(default=False)
-    date = models.DateField(default=now())
+    date = models.DateField(default=now)
     
     class Meta:
         db_table = "todolist"
+        ordering = ['-date']
+    
+    def __str__(self) -> str:
+        return f'{self.date}'
+
+class ToDo(models.Model):
+    to_do_list = models.ForeignKey(ToDoList, on_delete=models.CASCADE)
+    writer = models.ForeignKey(User, on_delete=models.CASCADE)
+    task = models.CharField(max_length=255)
+    is_done = models.BooleanField(default=False)
+    date = models.DateField(default=now)
+    
+    class Meta:
+        db_table = "todo"
         ordering = ['-date']
     
     def __str__(self) -> str:
