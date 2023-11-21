@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
 
-from group.models import Group, Meeting, ToDoList, ToDo
+from group.models import Group, Meeting, ToDoList, ToDo, Notice
 from group.serializers import (GroupSerializer, MeetingSerializer,NoticeSerializer,
                                ToDoListSerializer, TaskSerializer)
 
@@ -70,12 +70,33 @@ class GroupNoticeView(APIView):
             serializer.save(group=group_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class NoticeDetailView(APIView):
+    permission_classes = [IsAuthenticated]
     
+    def put(self, request, notice_id):
+        notice = get_object_or_404(Notice.objects.select_related('group'), id=notice_id)
+        if notice.group.leader != request.user:
+            return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        serializer = NoticeSerializer(notice, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, notice_id):
+        notice = get_object_or_404(Notice.objects.select_related('group'), id=notice_id)
+        if notice.group.leader != request.user:
+            return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
+        notice.delete()
+        return Response({"detail":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)   
+
 class MeetingDetailView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
     def put(self, request, meeting_id):
-        meeting = get_object_or_404(Meeting, id=meeting_id)
+        meeting = get_object_or_404(Meeting.objects.select_related('group'), id=meeting_id)
         if meeting.group.leader != request.user:
             return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
             
@@ -86,8 +107,7 @@ class MeetingDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, meeting_id):
-        meeting = Meeting.objects.select_related("group").get(id=meeting_id)
-        
+        meeting = get_object_or_404(Meeting.objects.select_related('group'), id=meeting_id)
         if meeting.group.leader != request.user:
             return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
         

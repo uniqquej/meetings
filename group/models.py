@@ -31,11 +31,11 @@ class Notice(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     content = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         db_table = "notice"
-        ordering = ['-created_at']
+        ordering = ['-updated_at']
     
     def __str__(self) -> str:
         return f'{self.title}'
