@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.utils import timezone
 
 from group.models import Group, Meeting, ToDoList, ToDo
 from group.serializers import (GroupSerializer, MeetingSerializer,NoticeSerializer,
@@ -13,7 +14,7 @@ class GroupView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        groups = Group.objects.filter(Q(leader=request.user) | Q(member=request.user))
+        groups = Group.objects.filter(Q(member=request.user))
         serializer = GroupSerializer(groups, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -98,7 +99,7 @@ class ToDoListView(APIView):
     
     def get(self, request, group_id):
         to_do_list = ToDoList.objects.filter(group=group_id)
-        serializer = ToDoListSerializer(to_do_list)
+        serializer = ToDoListSerializer(to_do_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ToDoView(APIView):
@@ -110,11 +111,18 @@ class ToDoView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request, group_id):
-        serializer = TaskSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(group=group_id, writer=request.user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            group = Group.objects.prefetch_related('todolist_set').get(id=group_id)
+            to_do_list = group.todolist_set.filter(writer = request.user, date=request.data['date'])
+            if not to_do_list.exists():
+                ToDoList.objects.create(group=group, writer = request.user, date=request.data['date'])
+            serializer = TaskSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(to_do_list=to_do_list[0], writer=request.user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'detail':'not found'},status=status.HTTP_400_BAD_REQUEST)
     
 
 class ToDoDetailView(APIView):
