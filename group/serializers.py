@@ -9,11 +9,9 @@ class MeetingSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 class NoticeSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = Notice
         fields = "__all__"
-        read_only_fields = ["group",]
 
 class WriterSerializer(serializers.ModelSerializer):
     class Meta:
