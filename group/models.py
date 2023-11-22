@@ -15,14 +15,25 @@ class Group(models.Model):
     def __str__(self) -> str:
         return f'{self.group_name}'
 
-class Meeting(models.Model):
+class Calender(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    date = models.DateField(null=False)
+    
+    class Meta:
+        db_table = "calender"
+        ordering = ['-date']
+    
+    def __str__(self) -> str:
+        return f'{self.date}'
+
+class Meeting(models.Model):
     title = models.CharField(max_length=100)
-    time_to_meet = models.DateTimeField()
+    date = models.ForeignKey(Calender, on_delete=models.CASCADE)
+    time = models.TimeField(null=False)
     
     class Meta:
         db_table = "meeting"
-        ordering = ['-time_to_meet']
+        ordering = ['-time']
     
     def __str__(self) -> str:
         return f'{self.title}'

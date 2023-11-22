@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
 
-from group.models import Group, Meeting, ToDoList, ToDo, Notice
+from group.models import Group, Meeting, ToDoList, ToDo, Notice, Calender
 from group.serializers import (GroupSerializer, MeetingSerializer,NoticeSerializer,
                                ToDoListSerializer, TaskSerializer)
 
@@ -29,7 +29,7 @@ class GroupDetailView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     
     def get(self, request, group_id):
-        group = Group.objects.prefetch_related("meeting_set","notice_set").get(id=group_id)
+        group = Group.objects.prefetch_related("calender_set","notice_set").get(id=group_id)
         if (request.user not in group.member.all()):
             return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -37,10 +37,15 @@ class GroupDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request, group_id):
+        group = Group.objects.prefetch_related('calender_set').get(id=group_id)
+        calender = group.calender_set.filter(date=request.data['calender_date'])
+        if not calender.exists():
+            Calender.objects.create(group=group, date=request.data['calender_date'])
+            
         serializer = MeetingSerializer(data=request.data)
         
         if serializer.is_valid():
-            serializer.save(group_id=group_id)
+            serializer.save(date=calender[0])
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -93,23 +98,22 @@ class NoticeDetailView(APIView):
         return Response({"detail":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)   
 
 class MeetingDetailView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     
     def put(self, request, meeting_id):
-        meeting = get_object_or_404(Meeting.objects.select_related('group'), id=meeting_id)
-        if meeting.group.leader != request.user:
-            return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
+        meeting = get_object_or_404(Meeting.objects.select_related('date'), id=meeting_id)
+        group = meeting.date.group
+        if ('calender_date' in request.data) & (meeting.date.date != request.data['calender_date']):
+            calender, is_created = Calender.objects.get_or_create(date=request.data['calender_date'], group=group)
             
         serializer = MeetingSerializer(meeting, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(date=calender)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, meeting_id):
-        meeting = get_object_or_404(Meeting.objects.select_related('group'), id=meeting_id)
-        if meeting.group.leader != request.user:
-            return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
+        meeting = get_object_or_404(Meeting, id=meeting_id)
         
         meeting.delete()
         return Response({"detail":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)

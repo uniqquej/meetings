@@ -1,12 +1,30 @@
 from rest_framework import serializers
 
 from user.models import User
-from group.models import Group, Meeting, Notice, ToDoList, ToDo
+from group.models import Group, Calender, Meeting, Notice, ToDoList, ToDo
     
 class MeetingSerializer(serializers.ModelSerializer):
+    calender_date = serializers.DateField(write_only=True)
     class Meta:
         model = Meeting
         fields = "__all__"
+        read_only_fields = ['date']
+    
+    def validate(self, data):
+        data.pop('calender_date') 
+        return data
+        
+class CalenderSerializer(serializers.ModelSerializer):
+    meeting_set = MeetingSerializer(read_only=True, many=True)
+    meetings_cnt = serializers.SerializerMethodField()
+    
+    def get_meetings_cnt(self,obj):
+        return obj.meeting_set.count()
+    
+    class Meta:
+        model = Calender
+        fields = "__all__"
+
         
 class NoticeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,7 +50,7 @@ class ToDoListSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class GroupSerializer(serializers.ModelSerializer):
-    meeting_set = MeetingSerializer(read_only=True, many=True)
+    calender_set = CalenderSerializer(read_only=True, many=True)
     notice_set = NoticeSerializer(read_only=True, many=True)
     todolist_set = ToDoListSerializer(read_only=True, many=True)
     
