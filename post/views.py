@@ -7,7 +7,7 @@ from django.db.models import Q
 
 from drf_yasg.utils import swagger_auto_schema, no_body
 
-from post.open_api_param import (get_post_params, request_body_post,
+from post.swaggers import (get_post_params, request_body_post,
                                  request_body_recruitment, request_body_comment)
 from post.models import Post, Comment, PostImage, Recruitment, Category
 from group.models import Group

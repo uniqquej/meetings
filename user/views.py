@@ -20,7 +20,7 @@ from user.serializers import (
     LogoutSerializer,
 )
 from user.utils import make_signature, send_sms
-from user import swaggers
+from user.swaggers import request_body_login,request_body_auth
 
 class CheckPhoneNumberView(APIView):
     """
@@ -63,7 +63,7 @@ class CheckAuthNumberView(APIView):
     인증번호 일치 확인 API
     """
     @swagger_auto_schema(
-        request_body=swaggers.UserAuthSerializer,
+        request_body=request_body_auth,
         responses={"200":"인증이 완료되었습니다.","400":"인증 번호가 일치하지 않는 경우","404":"입력한 휴대폰 번호가 DB에 없는 경우"}
         )
     def post(self, request):
@@ -114,7 +114,7 @@ class LoginView(APIView):
     로그인 뷰
     """
     @swagger_auto_schema(
-        request_body=swaggers.UserLoginSerializer,
+        request_body=request_body_login,
         responses={"200":"로그인 성공 시 access, refresh token 발급","404":"회원가입 된 유저가 없는 경우", "400":"비밀번호 불일치 혹은 에러 발생"}
         )
     def post(self, request):

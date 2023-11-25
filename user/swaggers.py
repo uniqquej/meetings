@@ -1,12 +1,17 @@
-from rest_framework import serializers
+from drf_yasg import openapi
 
-from user.models import User
+request_body_login = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={ 
+            'phone_number': openapi.Schema(type=openapi.TYPE_STRING, description="핸드폰 번호"),
+            'password': openapi.Schema(type=openapi.TYPE_STRING, description="비밀번호"),
+        }
+    )
 
-class UserLoginSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(max_length=255)
-    password = serializers.CharField(max_length=255)
-
-class UserAuthSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(max_length=255)
-    input_number = serializers.CharField(max_length = 4)
-    
+request_body_auth = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={ 
+            'phone_number': openapi.Schema(type=openapi.TYPE_STRING, description="핸드폰 번호"),
+            'input_number': openapi.Schema(type=openapi.TYPE_STRING, description="인증 번호"),
+        }
+    )
