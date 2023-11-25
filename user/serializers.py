@@ -10,7 +10,7 @@ from user.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ["auth_number", "is_admin"]
+        exclude = ["auth_number", "is_admin","last_login"]
 
     def validate(self, data):
         if "password" in data:
