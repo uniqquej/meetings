@@ -111,6 +111,8 @@ class PostDetailView(APIView):
         return Response({"detail":"삭제 완료"}, status = status.HTTP_204_NO_CONTENT)
 
 class PostLikeView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     @swagger_auto_schema(
         request_body=no_body,
         responses={"201":"좋아요", "204":"좋아요 취소"}
