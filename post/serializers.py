@@ -36,13 +36,6 @@ class RecruitmentSerializer(serializers.ModelSerializer):
         model = Recruitment
         fields = "__all__"
         
-    def validate(self, data):
-        group = Group.objects.filter(id=data['group'])
-        
-        if not group.exists:
-            raise ValidationError("해당 그룹이 존재하지 않습니다.")
-        return data
-        
 
 class RecruitmentDetailSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)

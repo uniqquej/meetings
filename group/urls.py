@@ -8,6 +8,7 @@ urlpatterns = [
     path('<int:group_id>/notice', views.GroupNoticeView.as_view(), name="group_notice"),
     path('notice/<int:notice_id>', views.NoticeDetailView.as_view(), name="notice_detail"),
     path('<int:group_id>/to-do-list', views.ToDoListView.as_view(), name='to_do_list'),
+    path('<int:group_id>/my-to-do', views.MyToDoListView.as_view(), name='my_to_do'),
     path('<int:group_id>/to-do', views.ToDoView.as_view(), name='to_do'),
     path('to-do/<int:to_do_id>', views.ToDoDetailView.as_view(), name='to_do_list_detail'),
     path('meeting/<int:meeting_id>', views.MeetingDetailView.as_view(), name="meeting"),

@@ -209,7 +209,7 @@ class ToDoListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ToDoView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     @swagger_auto_schema(
         request_body=request_body_to_do,
@@ -220,6 +220,7 @@ class ToDoView(APIView):
         유저 할일 생성
         """
         try:
+            print(request.user)
             group = Group.objects.prefetch_related('todolist_set').get(id=group_id)
             to_do_list = group.todolist_set.filter(writer = request.user, date=request.data['date'])
             if not to_do_list.exists():
@@ -227,7 +228,7 @@ class ToDoView(APIView):
             serializer = TaskSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(to_do_list=to_do_list[0], writer=request.user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({'detail':'not found'},status=status.HTTP_400_BAD_REQUEST)
@@ -263,3 +264,12 @@ class ToDoDetailView(APIView):
             return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
         to_do.delete()
         return Response({"detail":"삭제 완료"}, status=status.HTTP_204_NO_CONTENT)
+
+class MyToDoListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, group_id):
+        to_do_lists = ToDoList.objects.filter(writer = request.user, group_id=group_id)
+        serializer = ToDoListSerializer(to_do_lists, many=True)
+        return Response(serializer.data, status = status.HTTP_200_OK)
+    
