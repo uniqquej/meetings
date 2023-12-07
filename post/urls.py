@@ -4,6 +4,7 @@ from post import views
 
 urlpatterns = [
     path('', views.PostView.as_view(), name="post"),
+    path('profile/<int:user_id>', views.ProfilePostView.as_view(), name="profile-post"),
     path('<int:post_id>', views.PostDetailView.as_view(), name="post_detail"),
     path('<int:post_id>/like', views.PostLikeView.as_view(), name="post_like"),
     path('recruit', views.RecruitmentView.as_view(), name="recruitment"),

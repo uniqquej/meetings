@@ -7,6 +7,7 @@ from django.db.models import Q
 
 from drf_yasg.utils import swagger_auto_schema, no_body
 
+from user.models import User
 from post.swaggers import (get_post_params, request_body_post,
                                  request_body_recruitment, request_body_comment)
 from post.models import Post, Comment, PostImage, Recruitment, Category
@@ -25,6 +26,23 @@ class CategoryView(APIView):
         categories = Category.objects.all()
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ProfilePostView(APIView):
+    # permission_classes = [IsAuthenticated]
+    
+    def get(self,request,user_id):
+        params = request.GET.get('option',None)
+        current_user = User.objects.prefetch_related('liked_post','application','post_set').get(id=user_id)
+        
+        if params=="like":
+            posts = current_user.liked_post
+        elif params=="apply":
+            posts = current_user.application
+        else:
+            posts = current_user.post_set
+        
+        serializer = PostSerializer(posts,many=True)
+        return Response(serializer.data, status = status.HTTP_200_OK)
 
 class PostView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
