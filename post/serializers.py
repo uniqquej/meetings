@@ -37,7 +37,13 @@ class RecruitmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 
+class RecruitmentWriteSerializer(serializers.ModelSerializer): 
+    class Meta:
+        model = Recruitment
+        fields = ["category","number_of_recruits","title","content"]
+
 class RecruitmentDetailSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
     author = UserSerializer(read_only=True)
     applicant_count = serializers.SerializerMethodField(read_only=True)
     group = GroupSerializer(read_only=True)

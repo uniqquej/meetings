@@ -13,7 +13,7 @@ from post.swaggers import (get_post_params, request_body_post,
 from post.models import Post, Comment, PostImage, Recruitment, Category
 from group.models import Group
 from post.serializers import (CategorySerializer,PostSerializer, CommentSerializer, 
-                              RecruitmentSerializer, RecruitmentDetailSerializer)
+                              RecruitmentSerializer, RecruitmentDetailSerializer,RecruitmentWriteSerializer)
 
 class CategoryView(APIView):
     """
@@ -38,6 +38,8 @@ class ProfilePostView(APIView):
             posts = current_user.liked_post
         elif params=="apply":
             posts = current_user.application
+            serializer = RecruitmentSerializer(posts,many=True)
+            return Response(serializer.data, status = status.HTTP_200_OK)
         else:
             posts = current_user.post_set
         
@@ -179,7 +181,7 @@ class RecruitmentView(APIView):
         """
         멤버 모집 글 작성
         """
-        serializer = RecruitmentSerializer(data=request.data)
+        serializer = RecruitmentWriteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author = request.user)
             return Response(serializer.data, status = status.HTTP_201_CREATED)
@@ -211,7 +213,7 @@ class RecruitmentDetailView(APIView):
         if recruitment.author != request.user:
             return Response({"detail":"권한 없음"}, status=status.HTTP_403_FORBIDDEN)
         
-        serializer = RecruitmentDetailSerializer(recruitment, data=request.data, partial=True)
+        serializer = RecruitmentWriteSerializer(recruitment, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status = status.HTTP_202_ACCEPTED)
