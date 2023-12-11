@@ -32,7 +32,7 @@ class ProfilePostView(APIView):
     
     def get(self,request,user_id):
         params = request.GET.get('option',None)
-        current_user = User.objects.prefetch_related('liked_post','application','post_set').get(id=user_id)
+        current_user = User.objects.prefetch_related('liked_post','application','post_set','recruitment_set').get(id=user_id)
         
         if params=="like":
             posts = current_user.liked_post
@@ -40,8 +40,13 @@ class ProfilePostView(APIView):
             posts = current_user.application
             serializer = RecruitmentSerializer(posts,many=True)
             return Response(serializer.data, status = status.HTTP_200_OK)
+        elif params=="recruit":
+            posts = current_user.recruitment_set
+            serializer = RecruitmentSerializer(posts,many=True)
+            return Response(serializer.data, status = status.HTTP_200_OK)
         else:
             posts = current_user.post_set
+            
         
         serializer = PostSerializer(posts,many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)

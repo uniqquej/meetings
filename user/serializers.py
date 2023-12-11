@@ -25,21 +25,20 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if "password" in validated_data:
             instance.set_password(validated_data.get("password", instance.password))
-            instance.save()
 
         if "nickname" in validated_data:
             if validated_data["nickname"] == "":
                 instance.nickname = f"user{instance.id}"
-                instance.save()
+
             else:
                 instance.nickname = validated_data.get("nickname", instance.nickname)
-                instance.save()
 
         if "profile_image" in validated_data:
             instance.profile_image = validated_data.get(
                 "profile_image", instance.profile_image
             )
-            instance.save()
+        
+        instance.save()
 
         return instance
 
