@@ -40,7 +40,7 @@ class RecruitmentSerializer(serializers.ModelSerializer):
 class RecruitmentWriteSerializer(serializers.ModelSerializer): 
     class Meta:
         model = Recruitment
-        fields = ["category","number_of_recruits","title","content"]
+        fields = ["category","number_of_recruits","title","content","group"]
 
 class RecruitmentDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
