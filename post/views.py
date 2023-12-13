@@ -45,18 +45,18 @@ class ProfilePostView(APIView, PaginationHandlerMixin):
         
         if params=="apply" or params =="recruit":
             if params=="apply":
-                recruitments = current_user.application
+                recruitments = current_user.application.all()
                 
             else: 
-                recruitments = current_user.recruitment_set
+                recruitments = current_user.recruitment_set.all()
             
             serializer = set_pagination(self, recruitments, RecruitmentSerializer)
             return Response(serializer.data, status = status.HTTP_200_OK)    
         
         if params=="like":
-            posts = current_user.liked_post
+            posts = current_user.liked_post.all()
         else:
-            posts = current_user.post_set
+            posts = current_user.post_set.all()
             
         serializer = set_pagination(self, posts, PostSerializer)
         return Response(serializer.data, status = status.HTTP_200_OK)
@@ -165,7 +165,7 @@ class PostLikeView(APIView):
             post.likes.add(request.user)
             return Response({"detail":"좋아요 완료"},status=status.HTTP_201_CREATED)
 
-class CommentView(APIView, PageNumberPagination):
+class CommentView(APIView, PaginationHandlerMixin):
     permission_classes = [IsAuthenticated]
     pagination_class = CommentPagination
     
@@ -177,9 +177,9 @@ class CommentView(APIView, PageNumberPagination):
         댓글리스트 조회
         """
         post = Post.objects.prefetch_related("comment_set").get(id=post_id)
-        comment = post.comment_set
-        serializer = set_pagination(self, comment, CommentSerializer)
-        return Response(serializer.data, status = status.HTTP_200_OK)
+        comments = post.comment_set.all()
+        serializer = set_pagination(self, comments, CommentSerializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     @swagger_auto_schema(
         request_body=request_body_comment,
