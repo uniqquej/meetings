@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from rest_framework.pagination import PageNumberPagination 
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
@@ -11,9 +12,17 @@ from user.models import User
 from post.swaggers import (get_post_params, request_body_post,
                                  request_body_recruitment, request_body_comment)
 from post.models import Post, Comment, PostImage, Recruitment, Category
+from post.pagination import PaginationHandlerMixin, set_pagination
 from group.models import Group
 from post.serializers import (CategorySerializer,PostSerializer, CommentSerializer, 
                               RecruitmentSerializer, RecruitmentDetailSerializer,RecruitmentWriteSerializer)
+
+
+class BasicPagination(PageNumberPagination):
+    page_size = 10
+
+class CommentPagination(PageNumberPagination):
+    page_size = 5
 
 class CategoryView(APIView):
     """
@@ -27,32 +36,35 @@ class CategoryView(APIView):
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class ProfilePostView(APIView):
+class ProfilePostView(APIView, PaginationHandlerMixin):
     # permission_classes = [IsAuthenticated]
+    # pagination_class = BasicPagination
     
     def get(self,request,user_id):
         params = request.GET.get('option',None)
         current_user = User.objects.prefetch_related('liked_post','application','post_set','recruitment_set').get(id=user_id)
         
+        if params=="apply" or params =="recruit":
+            if params=="apply":
+                recruitments = current_user.application
+                
+            else: 
+                recruitments = current_user.recruitment_set
+            
+            serializer = set_pagination(self, recruitments, RecruitmentSerializer)
+            return Response(serializer.data, status = status.HTTP_200_OK)    
+        
         if params=="like":
             posts = current_user.liked_post
-        elif params=="apply":
-            posts = current_user.application
-            serializer = RecruitmentSerializer(posts,many=True)
-            return Response(serializer.data, status = status.HTTP_200_OK)
-        elif params=="recruit":
-            posts = current_user.recruitment_set
-            serializer = RecruitmentSerializer(posts,many=True)
-            return Response(serializer.data, status = status.HTTP_200_OK)
         else:
             posts = current_user.post_set
             
-        
-        serializer = PostSerializer(posts,many=True)
+        serializer = set_pagination(self, posts, PostSerializer)
         return Response(serializer.data, status = status.HTTP_200_OK)
 
-class PostView(APIView):
+class PostView(APIView, PaginationHandlerMixin):
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = BasicPagination
     
     @swagger_auto_schema(
         manual_parameters=get_post_params,
@@ -73,7 +85,7 @@ class PostView(APIView):
             q &= Q(title__icontains=params) | Q(content__icontains=params)
             
         posts = Post.objects.filter(q).select_related("author")
-        serializer = PostSerializer(posts, many=True)
+        serializer = set_pagination(self, posts, PostSerializer)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
     @swagger_auto_schema(
@@ -154,8 +166,10 @@ class PostLikeView(APIView):
             post.likes.add(request.user)
             return Response({"detail":"좋아요 완료"},status=status.HTTP_201_CREATED)
 
-class RecruitmentView(APIView):
+class RecruitmentView(APIView, PaginationHandlerMixin):
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = BasicPagination
+    serializer_calss = RecruitmentSerializer
     
     @swagger_auto_schema(
         manual_parameters=get_post_params,
@@ -175,7 +189,7 @@ class RecruitmentView(APIView):
             q &= Q(title__icontains=params) | Q(content__icontains=params)
             
         recruitments =Recruitment.objects.filter(q).select_related("author")
-        serializer = RecruitmentSerializer(recruitments, many=True)
+        serializer = set_pagination(self,recruitments,RecruitmentSerializer)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
     @swagger_auto_schema(
@@ -254,8 +268,9 @@ class ApplicantView(APIView):
             recruitment.applicant.remove(request.user)
             return Response({"detail":"지원 취소"},status=status.HTTP_204_NO_CONTENT)
 
-class CommentView(APIView):
+class CommentView(APIView, PageNumberPagination):
     permission_classes = [IsAuthenticated]
+    pagination_class = CommentPagination
     
     @swagger_auto_schema(
         responses={"200":CommentSerializer(many=True)}
@@ -266,7 +281,7 @@ class CommentView(APIView):
         """
         post = Post.objects.prefetch_related("comment_set").get(id=post_id)
         comment = post.comment_set
-        serializer = CommentSerializer(comment, many=True)
+        serializer = set_pagination(self, comment, CommentSerializer)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
     @swagger_auto_schema(
