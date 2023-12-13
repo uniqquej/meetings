@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "post",
     "chat",
     "group",
+    "recruitment",
 ]
 
 ASGI_APPLICATION = "config.asgi.application"
