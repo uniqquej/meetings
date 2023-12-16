@@ -44,6 +44,7 @@ class ProfilePostView(APIView, PaginationHandlerMixin):
         current_user = User.objects.prefetch_related('liked_post','application','post_set','recruitment_set').get(id=user_id)
         
         if params=="apply" or params =="recruit":
+            print('current_user',current_user)
             if params=="apply":
                 recruitments = current_user.application.all()
                 
@@ -53,9 +54,10 @@ class ProfilePostView(APIView, PaginationHandlerMixin):
             serializer = set_pagination(self, recruitments, RecruitmentSerializer)
             return Response(serializer.data, status = status.HTTP_200_OK)    
         
-        if params=="like":
+        elif params=="like":
             posts = current_user.liked_post.all()
         else:
+            print('current_user',current_user)
             posts = current_user.post_set.all()
             
         serializer = set_pagination(self, posts, PostSerializer)
