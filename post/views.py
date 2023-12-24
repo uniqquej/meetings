@@ -12,7 +12,8 @@ from user.models import User
 from post.swaggers import (get_post_params, request_body_post, request_body_comment)
 from post.models import Post, Comment, PostImage, Category
 from post.pagination import PaginationHandlerMixin, set_pagination
-from post.serializers import (CategorySerializer,PostSerializer, CommentSerializer)
+from post.serializers import (CategorySerializer,PostSerializer, 
+                              PostCreateSerializer, CommentSerializer)
 
 from recruitment.serializers import RecruitmentSerializer
 
@@ -43,7 +44,7 @@ class ProfilePostView(APIView, PaginationHandlerMixin):
         params = request.GET.get('option',None)
         current_user = User.objects.prefetch_related('liked_post','application','post_set','recruitment_set').get(id=user_id)
         
-        if params=="apply" or params =="recruit":
+        if params=="apply" or params =="recruitment":
             print('current_user',current_user)
             if params=="apply":
                 recruitments = current_user.application.all()
@@ -97,9 +98,12 @@ class PostView(APIView, PaginationHandlerMixin):
         """
         게시글 작성
         """
-        serializer = PostSerializer(data=request.data)
+        images = request.FILES.getlist('images')
+        serializer = PostCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author = request.user)
+            for img in images:
+                PostImage.objects.create(post=serializer,image=img)
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -168,7 +172,7 @@ class PostLikeView(APIView):
             return Response({"detail":"좋아요 완료"},status=status.HTTP_201_CREATED)
 
 class CommentView(APIView, PaginationHandlerMixin):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = CommentPagination
     
     @swagger_auto_schema(
