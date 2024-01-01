@@ -215,6 +215,7 @@ class ToDoView(APIView):
         request_body=request_body_to_do,
         responses={"200":TaskSerializer(many=True)}
     )
+        
     def post(self, request, group_id):
         """
         유저 할일 생성
@@ -240,7 +241,8 @@ class ToDoDetailView(APIView):
     @swagger_auto_schema(
         request_body=request_body_to_do,
         responses={"200":TaskSerializer(many=True)}
-    )
+    )   
+        
     def put(self, request, to_do_id):
         """
         유저 할일 수정
@@ -272,4 +274,15 @@ class MyToDoListView(APIView):
         to_do_lists = ToDoList.objects.filter(writer = request.user, group_id=group_id)
         serializer = ToDoListSerializer(to_do_lists, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
+
+class ToDoCheckView(APIView):
+    permission_classes = [IsAuthenticated]
     
+    def put(self, request, to_do_id):
+        to_do = get_object_or_404(ToDo, id=to_do_id)
+        if to_do.writer != request.user:
+            return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
+        to_do.is_done = request.data["is_done"]
+        to_do.save()
+        
+        return Response(status = status.HTTP_200_OK)
