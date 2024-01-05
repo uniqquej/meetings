@@ -108,7 +108,7 @@ class PostView(APIView, PaginationHandlerMixin):
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 class PostDetailView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     
     @swagger_auto_schema(
         responses={"200":PostSerializer}
@@ -172,7 +172,7 @@ class PostLikeView(APIView):
             return Response({"detail":"좋아요 완료"},status=status.HTTP_201_CREATED)
 
 class CommentView(APIView, PaginationHandlerMixin):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     pagination_class = CommentPagination
     
     @swagger_auto_schema(

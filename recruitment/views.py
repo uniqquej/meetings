@@ -19,7 +19,7 @@ class BasicPagination(PageNumberPagination):
     page_size = 10
 
 class RecruitmentView(APIView, PaginationHandlerMixin):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     pagination_class = BasicPagination
     serializer_calss = RecruitmentSerializer
     
