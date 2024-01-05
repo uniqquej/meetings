@@ -228,7 +228,12 @@ class ToDoView(APIView):
                 ToDoList.objects.create(group=group, writer = request.user, date=request.data['date'])
             serializer = TaskSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save(to_do_list=to_do_list[0], writer=request.user)
+                to_do_list=to_do_list[0]
+                serializer.save(to_do_list=to_do_list, writer=request.user)
+                
+                progress_rate = to_do_list.calculate_progress_rate()
+                to_do_list.progress_rate = progress_rate
+                to_do_list.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
@@ -284,5 +289,9 @@ class ToDoCheckView(APIView):
             return Response({"detail":"권한 없음"}, status=status.HTTP_401_UNAUTHORIZED)
         to_do.is_done = request.data["is_done"]
         to_do.save()
+        to_do_list = to_do.to_do_list
+        progress_rate = to_do_list.calculate_progress_rate()
+        to_do_list.progress_rate = progress_rate
+        to_do_list.save()
         
         return Response(status = status.HTTP_200_OK)

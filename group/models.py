@@ -55,6 +55,7 @@ class ToDoList(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
     writer = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(null=False)
+    progress_rate = models.IntegerField(default=0)
     
     class Meta:
         db_table = "todolist"
@@ -62,6 +63,15 @@ class ToDoList(models.Model):
     
     def __str__(self) -> str:
         return f'{self.date}'
+    
+    def calculate_progress_rate(self):
+        to_dos = self.todo_set.count()
+        done_todos = self.todo_set.filter(is_done=True).count()
+        if done_todos >0:
+            progress_rate =  (done_todos/to_dos)*100
+            return progress_rate
+        return 0
+        
 
 class ToDo(models.Model):
     to_do_list = models.ForeignKey(ToDoList, on_delete=models.CASCADE)

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 
 from user.models import User
 from group.models import Group, Calender, Meeting, Notice, ToDoList, ToDo
@@ -52,8 +53,13 @@ class ToDoListSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     calender_set = CalenderSerializer(read_only=True, many=True)
     notice_set = NoticeSerializer(read_only=True, many=True)
-    todolist_set = ToDoListSerializer(read_only=True, many=True)
+    todolist_set = serializers.SerializerMethodField()
     
+    def get_todolist_set(self,obj):
+        filtered_list = obj.todolist_set.filter(date = timezone.now())
+        serializers = ToDoListSerializer(filtered_list, many=True)
+        return serializers.data
+   
     class Meta:
         model = Group
         fields = "__all__"
