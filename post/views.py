@@ -65,7 +65,7 @@ class ProfilePostView(APIView, PaginationHandlerMixin):
         return Response(serializer.data, status = status.HTTP_200_OK)
 
 class PostView(APIView, PaginationHandlerMixin):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     pagination_class = BasicPagination
     
     @swagger_auto_schema(
