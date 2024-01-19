@@ -20,8 +20,9 @@
 ## 3. 기술
 ### 백엔드
 <img src="https://img.shields.io/badge/python-3.9.10-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/django-092E20?style=for-the-badge&logo=django&logoColor=white">
-### 프론트 엔드
+### 프론트 엔드 [ <github으로> ](https://github.com/uniqquej/meetings_front)
  <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=black"> 
+ 
  
 ---
 
