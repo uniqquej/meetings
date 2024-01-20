@@ -11,6 +11,8 @@
 
 ### ✔ 3. 모집 공고 조회, 작성, 지원
 ![recruit](https://github.com/uniqquej/meetings/assets/109218139/cadb669c-d38d-4e6a-9fb3-1971694f65c7)
+![rec](https://github.com/uniqquej/meetings/assets/109218139/3e6a2d8f-90ba-4a47-b9e3-ae46cbe5e019)
+
 
 ### ✔ 4. 스터디 관리 (to-do-list, 공지 사항, 스터디 일정 조회 등)
 ![todo](https://github.com/uniqquej/meetings/assets/109218139/b16f7658-3e8f-4d12-9633-a2f59c91df47)
