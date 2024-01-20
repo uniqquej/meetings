@@ -4,7 +4,6 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from django.utils import timezone
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -16,7 +15,6 @@ from group.serializers import (GroupSerializer, MeetingSerializer,NoticeSerializ
 
 class GroupView(APIView):
     permission_classes = [IsAuthenticated]
-    
     
     @swagger_auto_schema(
         responses={"200":GroupSerializer(many=True)}
@@ -209,7 +207,7 @@ class ToDoListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ToDoView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     
     @swagger_auto_schema(
         request_body=request_body_to_do,
