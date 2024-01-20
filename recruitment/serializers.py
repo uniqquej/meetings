@@ -24,6 +24,7 @@ class RecruitmentWriteSerializer(serializers.ModelSerializer):
 class RecruitmentDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     author = AuthorSerializer(read_only=True)
+    applicant = AuthorSerializer(read_only=True, many=True)
     applicant_count = serializers.SerializerMethodField(read_only=True)
     group = GroupSerializer(read_only=True)
     

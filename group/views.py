@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 from drf_yasg.utils import swagger_auto_schema
-
+from user.models import User
 from group.swaggers import (request_body_group, request_body_meeting,
                             request_body_to_do, request_body_notice, request_body_put_group)
 from group.models import Group, Meeting, ToDoList, ToDo, Notice, Calender
@@ -40,6 +40,17 @@ class GroupView(APIView):
             serializer.save(leader=request.user, member=[request.user])
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LeaderGroupView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """
+        유저가 member로 포함되어 있는 그룹 리스트 조회
+        """
+        groups = Group.objects.filter(Q(leader=request.user))
+        serializer = GroupSerializer(groups, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class GroupDetailView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -96,6 +107,16 @@ class GroupDetailView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AcceptApplicant(APIView):
+    def post(self, request, group_id,user_id):
+        group = Group.objects.get(id=group_id)
+        user = User.objects.get(id=user_id)
+        if user not in group.member.all():
+            group.member.add(user)
+            return Response({"msg":"수락 완료"}, status=status.HTTP_201_CREATED)
+        return Response({"msg":"이미 멤버인 사람입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            
 
 class GroupNoticeView(APIView):
     permission_classes = [IsAuthenticated]
