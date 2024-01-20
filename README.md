@@ -15,6 +15,10 @@
 ### ✔ 4. 스터디 관리 (to-do-list, 공지 사항, 스터디 일정 조회 등)
 ![todo](https://github.com/uniqquej/meetings/assets/109218139/b16f7658-3e8f-4d12-9633-a2f59c91df47)
 
+### ✔ 5. 스터디 모임 채팅
+![chat](https://github.com/uniqquej/meetings/assets/109218139/20cdfff9-2a11-45fa-a92b-592067a56adb)
+
+
 ---
 
 ## 3. 기술
