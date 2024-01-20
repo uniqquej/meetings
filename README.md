@@ -16,7 +16,8 @@
 ![todo](https://github.com/uniqquej/meetings/assets/109218139/b16f7658-3e8f-4d12-9633-a2f59c91df47)
 
 ### ✔ 5. 스터디 모임 채팅
-![chat](https://github.com/uniqquej/meetings/assets/109218139/20cdfff9-2a11-45fa-a92b-592067a56adb)
+![chat](https://github.com/uniqquej/meetings/assets/109218139/81710305-2f11-4ad7-836b-e34fedc8470c)
+
 
 
 ---
